@@ -29,6 +29,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: StandaloneWindows64
+          gitPrivateToken: ${{ secrets.PRIVATE_TOKEN }}
 
       - name: Output
         uses: actions/upload-artifact@v3
