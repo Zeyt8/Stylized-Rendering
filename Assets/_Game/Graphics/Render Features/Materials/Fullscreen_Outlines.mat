@@ -37,9 +37,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _ColorThreshold: 0.1
     - _DepthThreshold: 1
     - _NormalThreshold: 0.5
     - _OutlineScale: 2
+    - _OutlineScale_1: 1
+    - _OutlineScale_2: 0.5
     - _RobertsCrossMultiplier: 6
     - _SteepAngleMultiplier: 25
     - _SteepAngleThreshold: 1.67
