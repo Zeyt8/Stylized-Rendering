@@ -38,7 +38,9 @@ Material:
     m_Ints: []
     m_Floats:
     - _ColorThreshold: 0.1
-    - _DepthThreshold: 1
+    - _DepthThreshold: 0.2
+    - _DotsDensity: 100
+    - _DotsSize: 0.45
     - _NormalThreshold: 0.5
     - _OutlineScale: 2
     - _OutlineScale_1: 1
