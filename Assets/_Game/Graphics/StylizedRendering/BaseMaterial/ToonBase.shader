@@ -9,6 +9,8 @@ Shader "Custom/ToonBase"
         _SpecularStepThreshold ("Specular Step Threshold", Range(0.0, 1.0)) = 0.5
         _StipplingTex ("Stippling Texture", 2D) = "white" {}
         _StipplingScale ("Stippling Scale", Range(0.0, 1.0)) = 0.5
+        _TransparencyTex ("Transparency Texture", 2D) = "white" {}
+        _TransparencyDotsScale ("Transparency Dots Scale", Range(0.0, 20)) = 0.5
     }
     SubShader
     {
@@ -45,6 +47,9 @@ Shader "Custom/ToonBase"
             TEXTURE2D(_StipplingTex);
             SAMPLER(sampler_StipplingTex);
             float _StipplingScale;
+            TEXTURE2D(_TransparencyTex);
+            SAMPLER(sampler_TransparencyTex);
+            float _TransparencyDotsScale;
 
             struct Attributes
             {
@@ -60,6 +65,7 @@ Shader "Custom/ToonBase"
                 float3 positionWS : TEXCOORD1;
                 float2 uv : TEXCOORD2;
                 float4 shadowCoords : TEXCOORD3;
+                float2 screenPos : TEXCOORD4;
             };
 
             Varyings vert(Attributes IN)
@@ -72,6 +78,10 @@ Shader "Custom/ToonBase"
                 OUT.uv = IN.uv;
                 VertexPositionInputs positions = GetVertexPositionInputs(IN.positionOS.xyz);
                 OUT.shadowCoords = GetShadowCoord(positions);
+                float4 posScreenSpace = TransformObjectToHClip(IN.positionOS);
+                OUT.screenPos = posScreenSpace.xy / posScreenSpace.w;
+                float aspect = _ScreenParams.x / _ScreenParams.y;
+                OUT.screenPos.x *= aspect;
 
                 return OUT;
             }
@@ -150,14 +160,14 @@ Shader "Custom/ToonBase"
                 return dot(color, float3(0.2126729, 0.7151522, 0.0721750));
             }
 
-            float4 TriplanarSample(float3 worldPosition, float3 normalWS, float scale)
+            float4 TriplanarSample(TEXTURE2D_PARAM(tex, texSample), float3 worldPosition, float3 normalWS, float scale)
             {
                 float3 absNormal = abs(normalize(normalWS));
                 float3 blendWeights = absNormal / (absNormal.x + absNormal.y + absNormal.z);
             
-                float4 xSample = SAMPLE_TEXTURE2D(_StipplingTex, sampler_StipplingTex, worldPosition.yz * scale);
-                float4 ySample = SAMPLE_TEXTURE2D(_StipplingTex, sampler_StipplingTex, worldPosition.xz * scale);
-                float4 zSample = SAMPLE_TEXTURE2D(_StipplingTex, sampler_StipplingTex, worldPosition.xy * scale);
+                float4 xSample = SAMPLE_TEXTURE2D(tex, texSample, worldPosition.yz * scale);
+                float4 ySample = SAMPLE_TEXTURE2D(tex, texSample, worldPosition.xz * scale);
+                float4 zSample = SAMPLE_TEXTURE2D(tex, texSample, worldPosition.xy * scale);
             
                 return (xSample * blendWeights.x) + (ySample * blendWeights.y) + (zSample * blendWeights.z);
             }
@@ -166,7 +176,7 @@ Shader "Custom/ToonBase"
             {
                 // Object Color
                 float4 sampledTexture = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
-                float3 baseColor = sampledTexture.rgb * _Color.rgb;
+                float4 baseColor = sampledTexture.rgba * _Color.rgba;
 
                 // Ambient Light
                 float3 ambientLight = half3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
@@ -181,10 +191,16 @@ Shader "Custom/ToonBase"
                 // Shadows
                 half shadowAmount = CalculateShadowAmount(IN.shadowCoords, IN.positionWS);
                 float luminance = CalculateLuminance(diffuseLit * shadowAmount + ambientLight);
-                float stipplingValue = TriplanarSample(IN.positionWS, IN.normalWS, _StipplingScale).r;
+                float stipplingValue = TriplanarSample(TEXTURE2D_ARGS(_StipplingTex, sampler_StipplingTex), IN.positionWS, IN.normalWS, _StipplingScale).r;
                 float ditheringFactor = step(stipplingValue, luminance);
 
-                return half4((baseColor * diffuseLit + ambientLight + specularLit) * ditheringFactor, 1.0);
+                half halftonePattern = SAMPLE_TEXTURE2D(_TransparencyTex, sampler_TransparencyTex, IN.screenPos * _TransparencyDotsScale).r;
+                if (halftonePattern < 1 - baseColor.a)
+                {
+                    discard;
+                }
+
+                return half4((baseColor.rgb * diffuseLit + ambientLight + specularLit) * ditheringFactor, 1.0);
             }
 
             ENDHLSL
