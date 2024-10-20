@@ -17,9 +17,6 @@ Shader "Custom/ToonBase"
         _TransparencyDotsScale ("Transparency Dots Scale", Range(0.0, 20)) = 0.5
         //[Header("Emission and Bloom")]
         [HDR] _EmissiveColor ("Emissive Color", Color) = (0, 0, 0, 0)
-        _BloomThreshold ("Bloom Threshold", Range(0.0, 10)) = 1
-        _BloomCrosshatchThickness ("Bloom Crosshatch Thickness", Range(0.0, 0.5)) = 0.05
-        _BloomCrosshatchSpacing ("Bloom Crosshatch Spacing", Range(0.0, 0.1)) = 0.1
     }
     SubShader
     {
@@ -59,9 +56,6 @@ Shader "Custom/ToonBase"
             TEXTURE2D(_TransparencyTex);
             SAMPLER(sampler_TransparencyTex);
             float _TransparencyDotsScale;
-            float _BloomThreshold;
-            float _BloomCrosshatchThickness;
-            float _BloomCrosshatchSpacing;
             float4 _EmissiveColor;
 
             struct Attributes
@@ -185,17 +179,6 @@ Shader "Custom/ToonBase"
                 return (xSample * blendWeights.x) + (ySample * blendWeights.y) + (zSample * blendWeights.z);
             }
 
-            float ComputeCrosshatch(float2 screenPos, float lineWidth, float lineSpacing)
-            {
-                float horizontal = abs(frac(screenPos.y / lineSpacing) - 0.5);
-                float vertical = abs(frac(screenPos.x / lineSpacing) - 0.5);
-
-                float hLine = step(horizontal, lineWidth);
-                float vLine = step(vertical, lineWidth);
-
-                return max(hLine, vLine);
-            }
-
             half4 frag(Varyings IN) : SV_Target
             {
                 // Object Color
@@ -225,13 +208,9 @@ Shader "Custom/ToonBase"
                     discard;
                 }
 
-                // Bloom
-                float4 finalColor = float4((baseColor.rgb * diffuseLit + ambientLight + specularLit) * ditheringFactor, 1.0);
-                float totalLuminance = CalculateLuminance(finalColor + _EmissiveColor);
-                float crosshatch = ComputeCrosshatch(IN.screenPos, _BloomCrosshatchThickness, _BloomCrosshatchSpacing);
-                crosshatch *= step(_BloomThreshold, totalLuminance);
+                float4 finalColor = float4((baseColor.rgb * diffuseLit + ambientLight + specularLit + _EmissiveColor.rgb) * ditheringFactor, 1.0);
 
-                return half4(crosshatch * _EmissiveColor.rgb, 1.0) + (1 - crosshatch) * finalColor.rgba;
+                return finalColor;
             }
 
             ENDHLSL
