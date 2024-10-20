@@ -2,15 +2,24 @@ Shader "Custom/ToonBase"
 {
     Properties
     {
+        //[Header("Albedo")]
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
         _Color ("Color", Color) = (1, 1, 1, 1)
+        //[Header("Lighting")]
         _DiffuseStepThreshold ("Diffuse Step Threshold", Range(0.0, 1.0)) = 0.5
         _Shininess ("Shininess", Range(0.0, 128.0)) = 32.0
         _SpecularStepThreshold ("Specular Step Threshold", Range(0.0, 1.0)) = 0.5
-        _StipplingTex ("Stippling Texture", 2D) = "white" {}
+        //[Header("Shadows")]
+        [NoScaleOffset] _StipplingTex ("Stippling Texture", 2D) = "white" {}
         _StipplingScale ("Stippling Scale", Range(0.0, 1.0)) = 0.5
-        _TransparencyTex ("Transparency Texture", 2D) = "white" {}
+        //[Header("Transparency")]
+        [NoScaleOffset] _TransparencyTex ("Transparency Texture", 2D) = "white" {}
         _TransparencyDotsScale ("Transparency Dots Scale", Range(0.0, 20)) = 0.5
+        //[Header("Emission and Bloom")]
+        [HDR] _EmissiveColor ("Emissive Color", Color) = (0, 0, 0, 0)
+        _BloomThreshold ("Bloom Threshold", Range(0.0, 10)) = 1
+        _BloomCrosshatchThickness ("Bloom Crosshatch Thickness", Range(0.0, 0.5)) = 0.05
+        _BloomCrosshatchSpacing ("Bloom Crosshatch Spacing", Range(0.0, 0.1)) = 0.1
     }
     SubShader
     {
@@ -50,6 +59,10 @@ Shader "Custom/ToonBase"
             TEXTURE2D(_TransparencyTex);
             SAMPLER(sampler_TransparencyTex);
             float _TransparencyDotsScale;
+            float _BloomThreshold;
+            float _BloomCrosshatchThickness;
+            float _BloomCrosshatchSpacing;
+            float4 _EmissiveColor;
 
             struct Attributes
             {
@@ -172,6 +185,17 @@ Shader "Custom/ToonBase"
                 return (xSample * blendWeights.x) + (ySample * blendWeights.y) + (zSample * blendWeights.z);
             }
 
+            float ComputeCrosshatch(float2 screenPos, float lineWidth, float lineSpacing)
+            {
+                float horizontal = abs(frac(screenPos.y / lineSpacing) - 0.5);
+                float vertical = abs(frac(screenPos.x / lineSpacing) - 0.5);
+
+                float hLine = step(horizontal, lineWidth);
+                float vLine = step(vertical, lineWidth);
+
+                return max(hLine, vLine);
+            }
+
             half4 frag(Varyings IN) : SV_Target
             {
                 // Object Color
@@ -194,13 +218,20 @@ Shader "Custom/ToonBase"
                 float stipplingValue = TriplanarSample(TEXTURE2D_ARGS(_StipplingTex, sampler_StipplingTex), IN.positionWS, IN.normalWS, _StipplingScale).r;
                 float ditheringFactor = step(stipplingValue, luminance);
 
+                // Transparency
                 half halftonePattern = SAMPLE_TEXTURE2D(_TransparencyTex, sampler_TransparencyTex, IN.screenPos * _TransparencyDotsScale).r;
                 if (halftonePattern < 1 - baseColor.a)
                 {
                     discard;
                 }
 
-                return half4((baseColor.rgb * diffuseLit + ambientLight + specularLit) * ditheringFactor, 1.0);
+                // Bloom
+                float4 finalColor = float4((baseColor.rgb * diffuseLit + ambientLight + specularLit) * ditheringFactor, 1.0);
+                float totalLuminance = CalculateLuminance(finalColor + _EmissiveColor);
+                float crosshatch = ComputeCrosshatch(IN.screenPos, _BloomCrosshatchThickness, _BloomCrosshatchSpacing);
+                crosshatch *= step(_BloomThreshold, totalLuminance);
+
+                return half4(crosshatch * _EmissiveColor.rgb, 1.0) + (1 - crosshatch) * finalColor.rgba;
             }
 
             ENDHLSL
