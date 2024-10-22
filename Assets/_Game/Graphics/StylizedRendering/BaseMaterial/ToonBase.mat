@@ -130,6 +130,7 @@ Material:
     - _DiffuseStepThreshold: 0.2
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _Emission: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
@@ -154,7 +155,7 @@ Material:
     - _SpecularHighlights: 1
     - _SpecularStep: 0.6
     - _SpecularStepSmooth: 0
-    - _SpecularStepThreshold: 0.2
+    - _SpecularStepThreshold: 0.5
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Step: 0

@@ -8,7 +8,7 @@ Shader "Custom/ToonBase"
         //[Header("Lighting")]
         _DiffuseStepThreshold ("Diffuse Step Threshold", Range(0.0, 1.0)) = 0.5
         _Shininess ("Shininess", Range(0.0, 128.0)) = 32.0
-        _SpecularStepThreshold ("Specular Step Threshold", Range(0.0, 1.0)) = 0.5
+        _SpecularStepThreshold ("Specular Step Threshold", Range(0.0, 2.0)) = 0.5
         //[Header("Shadows")]
         [NoScaleOffset] _StipplingTex ("Stippling Texture", 2D) = "white" {}
         _StipplingScale ("Stippling Scale", Range(0.0, 1.0)) = 0.5
@@ -109,7 +109,7 @@ Shader "Custom/ToonBase"
 
                 Light mainLight = GetMainLight(shadowCoords);
                 half mainLightShadow = MainLightRealtimeShadow(shadowCoords);
-                totalShadow += mainLightShadow * mainLight.shadowAttenuation;
+                totalShadow += mainLightShadow;
 
                 return totalShadow;
             }
@@ -146,9 +146,8 @@ Shader "Custom/ToonBase"
                 Light mainLight = GetMainLight();
                 float3 reflectedLightDir = reflect(-mainLight.direction, normalWS);
                 float NdotR = saturate(dot(reflectedLightDir, viewDir));
-                NdotR = round(NdotR / specularStepThreshold) * specularStepThreshold;
 
-                specularLight += pow(NdotR, shininess) * mainLight.color;
+                specularLight += round(pow(NdotR, shininess) / specularStepThreshold) * specularStepThreshold * mainLight.color;
 
                 int additionalLightsCount = GetAdditionalLightsCount();
                 for (int i = 0; i < additionalLightsCount; i++)
@@ -158,7 +157,7 @@ Shader "Custom/ToonBase"
                     NdotR = saturate(dot(reflectedLightDir, viewDir));
                     NdotR = round(NdotR / specularStepThreshold) * specularStepThreshold;
 
-                    specularLight += pow(NdotR, shininess) * additionalLight.color * additionalLight.distanceAttenuation;
+                    specularLight += round(pow(NdotR, shininess) / specularStepThreshold) * specularStepThreshold * additionalLight.color * additionalLight.distanceAttenuation;
                 }
 
                 return specularLight;
