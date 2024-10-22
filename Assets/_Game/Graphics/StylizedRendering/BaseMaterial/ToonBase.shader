@@ -16,6 +16,7 @@ Shader "Custom/ToonBase"
         [NoScaleOffset] _TransparencyTex ("Transparency Texture", 2D) = "white" {}
         _TransparencyDotsScale ("Transparency Dots Scale", Range(0.0, 20)) = 0.5
         //[Header("Emission and Bloom")]
+        [MaterialToggle] _Emission ("Emission", float) = 0.0
         [HDR] _EmissiveColor ("Emissive Color", Color) = (0, 0, 0, 0)
     }
     SubShader
@@ -56,6 +57,7 @@ Shader "Custom/ToonBase"
             TEXTURE2D(_TransparencyTex);
             SAMPLER(sampler_TransparencyTex);
             float _TransparencyDotsScale;
+            float _Emission;
             float4 _EmissiveColor;
 
             struct Attributes
@@ -131,7 +133,7 @@ Shader "Custom/ToonBase"
 
                     NdotL = round(NdotL / stepThreshold) * stepThreshold;
                     NdotL = max(NdotL, 0.1);
-                    diffuseLight += NdotL * additionalLight.color;
+                    diffuseLight += NdotL * additionalLight.color * additionalLight.distanceAttenuation;
                 }
 
                 return diffuseLight;
@@ -156,7 +158,7 @@ Shader "Custom/ToonBase"
                     NdotR = saturate(dot(reflectedLightDir, viewDir));
                     NdotR = round(NdotR / specularStepThreshold) * specularStepThreshold;
 
-                    specularLight += pow(NdotR, shininess) * additionalLight.color;
+                    specularLight += pow(NdotR, shininess) * additionalLight.color * additionalLight.distanceAttenuation;
                 }
 
                 return specularLight;
@@ -199,7 +201,7 @@ Shader "Custom/ToonBase"
                 half shadowAmount = CalculateShadowAmount(IN.shadowCoords, IN.positionWS);
                 float luminance = CalculateLuminance(diffuseLit * shadowAmount + ambientLight);
                 float stipplingValue = TriplanarSample(TEXTURE2D_ARGS(_StipplingTex, sampler_StipplingTex), IN.positionWS, IN.normalWS, _StipplingScale).r;
-                float ditheringFactor = step(stipplingValue, luminance);
+                float ditheringFactor = step(stipplingValue * (1 - _Emission), luminance);
 
                 // Transparency
                 half halftonePattern = SAMPLE_TEXTURE2D(_TransparencyTex, sampler_TransparencyTex, IN.screenPos * _TransparencyDotsScale).r;
@@ -208,7 +210,7 @@ Shader "Custom/ToonBase"
                     discard;
                 }
 
-                float4 finalColor = float4((baseColor.rgb * diffuseLit + ambientLight + specularLit + _EmissiveColor.rgb) * ditheringFactor, 1.0);
+                float4 finalColor = float4((baseColor.rgb * diffuseLit + (ambientLight * diffuseLit) + specularLit + _Emission * _EmissiveColor.rgb) * ditheringFactor, 1.0);
 
                 return finalColor;
             }
