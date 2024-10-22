@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
-public class FullscreenPass_Render : ScriptableRenderPass
+public class OutlinePass_Render : ScriptableRenderPass
 {
     private readonly Material overrideMaterial;
     private readonly LayerMask layerMask;
@@ -18,7 +18,7 @@ public class FullscreenPass_Render : ScriptableRenderPass
         new("LightweightForward")
     };
 
-    public FullscreenPass_Render(FullscreenSettings settings, Material overrideMaterial)
+    public OutlinePass_Render(FullscreenSettings settings, Material overrideMaterial)
     {
         renderPassEvent = settings.RenderPassEvent;
         layerMask = settings.LayerMask;
@@ -56,7 +56,7 @@ public class FullscreenPass_Render : ScriptableRenderPass
     {
         string passName = "FullscreenPass Render";
         var resourceData = frameData.Get<UniversalResourceData>();
-        var fullscreenData = frameData.Get<FullscreenRenderData>();
+        var fullscreenData = frameData.Get<OutlineRenderData>();
         using var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData);
 
         var targetDesc = renderGraph.GetTextureDesc(resourceData.cameraColor);

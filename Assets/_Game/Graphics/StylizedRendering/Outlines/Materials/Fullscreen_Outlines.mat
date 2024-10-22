@@ -38,8 +38,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _ColorThreshold: 0.2
-    - _ColorThresholdMax: 0.2
-    - _ColorThresholdMin: 0.1
+    - _ColorThresholdMax: 0.5
+    - _ColorThresholdMin: 0.2
     - _DepthThreshold: 0.2
     - _DotsDensity: 100
     - _DotsSize: 0.45

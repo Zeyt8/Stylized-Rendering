@@ -1,12 +1,11 @@
-using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.RenderGraphModule;
-using UnityEngine.Rendering.RenderGraphModule.Util;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule.Util;
 
-internal class FullscreenPass_CopyColor : ScriptableRenderPass
+public class BloomPass_CopyColor : ScriptableRenderPass
 {
-    public FullscreenPass_CopyColor(FullscreenSettings settings)
+    public BloomPass_CopyColor(FullscreenSettings settings)
     {
         renderPassEvent = settings.RenderPassEvent;
     }
@@ -14,7 +13,7 @@ internal class FullscreenPass_CopyColor : ScriptableRenderPass
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
         var resourceData = frameData.Get<UniversalResourceData>();
-        var fullscreenData = frameData.GetOrCreate<FullscreenRenderData>();
+        var fullscreenData = frameData.GetOrCreate<BloomRenderData>();
 
         var targetDesc = renderGraph.GetTextureDesc(resourceData.cameraColor);
         targetDesc.name = "_FullscreenCameraColor";
@@ -23,6 +22,6 @@ internal class FullscreenPass_CopyColor : ScriptableRenderPass
         TextureHandle destination = renderGraph.CreateTexture(targetDesc);
         fullscreenData.ColorCopyTextureHandle = destination;
 
-        renderGraph.AddCopyPass(resourceData.cameraColor, destination, passName: "FullscreenPass Copy Color");
+        renderGraph.AddCopyPass(resourceData.cameraColor, destination, passName: "BloomPass Copy Color");
     }
 }
