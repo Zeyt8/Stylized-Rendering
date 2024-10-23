@@ -29,12 +29,13 @@ Shader "Custom/ToonBase"
 
         Pass
         {
-            Name "ForwardLit"
-            Tags { "LightMode" = "UniversalForward" }
+            Name "ToonLit"
+
             HLSLPROGRAM
 
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 3.0
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
@@ -204,10 +205,7 @@ Shader "Custom/ToonBase"
 
                 // Transparency
                 half halftonePattern = SAMPLE_TEXTURE2D(_TransparencyTex, sampler_TransparencyTex, IN.screenPos * _TransparencyDotsScale).r;
-                if (halftonePattern < 1 - baseColor.a)
-                {
-                    discard;
-                }
+                clip(halftonePattern - (1 - baseColor.a));
 
                 float4 finalColor = float4((baseColor.rgb * diffuseLit + (ambientLight * diffuseLit) + specularLit + _Emission * _EmissiveColor.rgb) * ditheringFactor, 1.0);
 
