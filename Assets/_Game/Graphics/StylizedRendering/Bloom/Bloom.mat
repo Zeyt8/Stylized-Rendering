@@ -117,16 +117,17 @@ Material:
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
-    - _Intensity: 1
+    - _Intensity: 1.2
     - _MaximumClamp: 1
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _RotationSpeed: 0.01
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
-    - _SoftThreshold: 0.8
+    - _SoftThreshold: 1
     - _Softness: 1
     - _Spacing: 0.01
     - _SpecularHighlights: 1
