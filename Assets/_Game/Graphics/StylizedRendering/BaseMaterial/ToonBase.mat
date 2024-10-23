@@ -161,9 +161,9 @@ Material:
     - _Step: 0
     - _StepThreshold: 0.5
     - _StippleIntensity: 0
-    - _StipplingScale: 0.1
+    - _StipplingScale: 0.07
     - _Surface: 0
-    - _TransparencyDotsScale: 20
+    - _TransparencyDotsScale: 0.015
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:

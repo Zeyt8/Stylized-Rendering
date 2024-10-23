@@ -13,8 +13,7 @@ Shader "Custom/ToonBase"
         [NoScaleOffset] _StipplingTex ("Stippling Texture", 2D) = "white" {}
         _StipplingScale ("Stippling Scale", Range(0.0, 1.0)) = 0.5
         //[Header("Transparency")]
-        [NoScaleOffset] _TransparencyTex ("Transparency Texture", 2D) = "white" {}
-        _TransparencyDotsScale ("Transparency Dots Scale", Range(0.0, 20)) = 0.5
+        _TransparencyDotsScale ("Transparency Dots Scale", Range(0.0, 1)) = 0.5
         //[Header("Emission and Bloom")]
         [MaterialToggle] _Emission ("Emission", float) = 0.0
         [HDR] _EmissiveColor ("Emissive Color", Color) = (0, 0, 0, 0)
@@ -23,6 +22,8 @@ Shader "Custom/ToonBase"
     {
         Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" }
 
+        UsePass "Universal Render Pipeline/Lit/ShadowCaster"
+        
         UsePass "Universal Render Pipeline/Lit/DepthOnly"
 
         UsePass "Universal Render Pipeline/Lit/DepthNormals"
@@ -55,8 +56,6 @@ Shader "Custom/ToonBase"
             TEXTURE2D(_StipplingTex);
             SAMPLER(sampler_StipplingTex);
             float _StipplingScale;
-            TEXTURE2D(_TransparencyTex);
-            SAMPLER(sampler_TransparencyTex);
             float _TransparencyDotsScale;
             float _Emission;
             float4 _EmissiveColor;
@@ -204,8 +203,9 @@ Shader "Custom/ToonBase"
                 float ditheringFactor = step(stipplingValue * (1 - _Emission), luminance);
 
                 // Transparency
-                half halftonePattern = SAMPLE_TEXTURE2D(_TransparencyTex, sampler_TransparencyTex, IN.screenPos * _TransparencyDotsScale).r;
-                clip(halftonePattern - (1 - baseColor.a));
+                half maxDist = length(float2(_TransparencyDotsScale / 2, _TransparencyDotsScale / 2));
+                half halftonePattern = distance(IN.screenPos, round(IN.screenPos / _TransparencyDotsScale) * _TransparencyDotsScale) / maxDist;
+                clip((1 - halftonePattern) - (1 - baseColor.a));
 
                 float4 finalColor = float4((baseColor.rgb * diffuseLit + (ambientLight * diffuseLit) + specularLit + _Emission * _EmissiveColor.rgb) * ditheringFactor, 1.0);
 
