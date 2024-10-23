@@ -1,14 +1,15 @@
-Shader "Custom/SinglePassGaussianBlur"
+Shader "Custom/GaussianBlur"
 {
     Properties
     {
-        _MainTex ("Base (RGB)", 2D) = "white" {}
-        _BlurSize ("Blur Size", Float) = 1.0
+        [HideInInspector] _MainTex ("Base (RGB)", 2D) = "white" {}
+        [HideInInspector] _BlurSize ("Blur Size", Float) = 1.0
     }
     SubShader
     {
         Pass
         {
+            Name "GaussianBlur"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -43,22 +44,24 @@ Shader "Custom/SinglePassGaussianBlur"
                 fixed4 color = fixed4(0, 0, 0, 0);
                 float2 offset = float2(_BlurSize / _ScreenParams.x, _BlurSize / _ScreenParams.y);
 
-                float kernel[5][5] = {
-                    {1, 4, 7, 4, 1},
-                    {4, 16, 26, 16, 4},
-                    {7, 26, 41, 26, 7},
-                    {4, 16, 26, 16, 4},
-                    {1, 4, 7, 4, 1}
+                float kernel[7][7] = {
+                    { 1.0,  6.0,  15.0,  20.0,  15.0,  6.0,  1.0 },
+                    { 6.0, 36.0,  90.0, 120.0,  90.0, 36.0,  6.0 },
+                    { 15.0, 90.0, 225.0, 300.0, 225.0, 90.0, 15.0 },
+                    { 20.0,120.0, 300.0, 400.0, 300.0,120.0, 20.0 },
+                    { 15.0, 90.0, 225.0, 300.0, 225.0, 90.0, 15.0 },
+                    { 6.0, 36.0,  90.0, 120.0,  90.0, 36.0,  6.0 },
+                    { 1.0,  6.0,  15.0,  20.0,  15.0,  6.0,  1.0 }
                 };
 
-                float kernelSum = 273.0;
+                float kernelSum = 4096.0;
 
-                for (int x = -2; x <= 2; x++)
+                for (int x = -3; x <= 3; x++)
                 {
-                    for (int y = -2; y <= 2; y++)
+                    for (int y = -3; y <= 3; y++)
                     {
                         float2 sampleOffset = float2(x * offset.x, y * offset.y);
-                        color += tex2D(_MainTex, uv + sampleOffset) * kernel[x + 2][y + 2];
+                        color += tex2D(_MainTex, uv + sampleOffset) * kernel[x + 3][y + 3];
                     }
                 }
 

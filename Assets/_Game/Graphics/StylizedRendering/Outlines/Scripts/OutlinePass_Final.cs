@@ -5,22 +5,22 @@ using UnityEngine.Rendering.Universal;
 
 public class OutlinePass_Final : ScriptableRenderPass
 {
-    private readonly FullscreenSettings settings;
+    private readonly FullscreenSettings _settings;
 
-    private readonly Material blitMaterial;
+    private readonly Material _blitMaterial;
 
     public OutlinePass_Final(FullscreenSettings settings, Material blitMaterial)
     {
         renderPassEvent = settings.RenderPassEvent;
-        this.settings = settings;
-        this.blitMaterial = blitMaterial;
+        _settings = settings;
+        _blitMaterial = blitMaterial;
     }
 
     private static void ExecutePass(PassData passData, RasterGraphContext context)
     {
-        passData.material.SetTexture("_FullscreenObjects", passData.objects);
-        passData.material.SetTexture("_FullscreenColor", passData.color);
-        Blitter.BlitTexture(context.cmd, passData.objects, new Vector4(1, 1, 0, 0), passData.material, 0);
+        passData.Material.SetTexture("_FullscreenObjects", passData.Objects);
+        passData.Material.SetTexture("_FullscreenColor", passData.Color);
+        Blitter.BlitTexture(context.cmd, passData.Objects, new Vector4(1, 1, 0, 0), passData.Material, 0);
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
@@ -36,9 +36,9 @@ public class OutlinePass_Final : ScriptableRenderPass
             return;
         }
 
-        passData.material = blitMaterial;
-        passData.objects = fullscreenData.ObjectTextureHandle;
-        passData.color = fullscreenData.ColorCopyTextureHandle;
+        passData.Material = _blitMaterial;
+        passData.Objects = fullscreenData.ObjectTextureHandle;
+        passData.Color = fullscreenData.ColorCopyTextureHandle;
 
         builder.UseTexture(fullscreenData.ObjectTextureHandle);
         builder.UseTexture(fullscreenData.ColorCopyTextureHandle);
@@ -47,15 +47,14 @@ public class OutlinePass_Final : ScriptableRenderPass
 
         builder.SetRenderFunc((PassData passData, RasterGraphContext context) =>
         {
-            //UpdateMaterial(passData);
             ExecutePass(passData, context);
         });
     }
 
     internal class PassData
     {
-        internal TextureHandle objects;
-        internal TextureHandle color;
-        internal Material material;
+        internal TextureHandle Objects;
+        internal TextureHandle Color;
+        internal Material Material;
     }
 }

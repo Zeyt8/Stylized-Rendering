@@ -6,37 +6,47 @@ using UnityEngine.Rendering.Universal;
 public class BloomRenderData : ContextItem
 {
     public TextureHandle ColorCopyTextureHandle;
-    public TextureHandle BlurredTextureHandle;
+    public TextureHandle[] BlurredTextureHandle = new TextureHandle[2];
 
     public override void Reset()
     {
         ColorCopyTextureHandle = TextureHandle.nullHandle;
-        BlurredTextureHandle = TextureHandle.nullHandle;
+        for (int i = 0; i < BlurredTextureHandle.Length; i++)
+        {
+            BlurredTextureHandle[i] = TextureHandle.nullHandle;
+        }
     }
 }
 
 public class BloomRenderFeature : ScriptableRendererFeature
 {
-    public Material blurMaterial;
-    public Material fullscreenMaterial;
+    [SerializeField] private Material _blurMaterial;
+    [SerializeField] private Material _fullscreenMaterial;
+    [SerializeField] private float _blurIntensity;
 
     public FullscreenSettings Settings = new();
 
-    private BloomPass_CopyColor bloomPass_CopyColor;
-    private BloomPass_Render bloomPass_Render;
-    private BloomPass_Final bloomPass_Final;
+    private BloomPass_CopyColor _bloomPass_CopyColor;
+    private BloomPass_Render[] _bloomPass_Render = new BloomPass_Render[2];
+    private BloomPass_Final _bloomPass_Final;
 
     public override void Create()
     {
-        bloomPass_CopyColor = new BloomPass_CopyColor(Settings);
-        bloomPass_Render = new BloomPass_Render(Settings, blurMaterial);
-        bloomPass_Final = new BloomPass_Final(Settings, fullscreenMaterial);
+        _bloomPass_CopyColor = new BloomPass_CopyColor(Settings);
+        for (int i = 0; i < _bloomPass_Render.Length; i++)
+        {
+            _bloomPass_Render[i] = new BloomPass_Render(Settings, new Material(_blurMaterial), _blurIntensity, i);
+        }
+        _bloomPass_Final = new BloomPass_Final(Settings, _fullscreenMaterial);
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        renderer.EnqueuePass(bloomPass_CopyColor);
-        renderer.EnqueuePass(bloomPass_Render);
-        renderer.EnqueuePass(bloomPass_Final);
+        renderer.EnqueuePass(_bloomPass_CopyColor);
+        for (int i = 0; i < _bloomPass_Render.Length; i++)
+        {
+            renderer.EnqueuePass(_bloomPass_Render[i]);
+        }
+        renderer.EnqueuePass(_bloomPass_Final);
     }
 }

@@ -17,27 +17,25 @@ public class OutlineRenderData : ContextItem
 
 public class OutlineRenderFeature : ScriptableRendererFeature
 {
-    public Material overrideMaterial;
+    [SerializeField] private Material overrideMaterial;
+    [SerializeField] private Material fullscreenMaterial;
+    [SerializeField] private FullscreenSettings Settings = new();
 
-    public Material fullscreenMaterial;
-
-    public FullscreenSettings Settings = new();
-
-    private OutlinePass_CopyColor outlinePass_CopyColor;
-    private OutlinePass_Render outlinePass_Render;
-    private OutlinePass_Final outlinePass_Final;
+    private OutlinePass_CopyColor _outlinePass_CopyColor;
+    private OutlinePass_Render _outlinePass_Render;
+    private OutlinePass_Final _outlinePass_Final;
 
     public override void Create()
     {
-        outlinePass_CopyColor = new OutlinePass_CopyColor(Settings);
-        outlinePass_Render = new OutlinePass_Render(Settings, overrideMaterial);
-        outlinePass_Final = new OutlinePass_Final(Settings, fullscreenMaterial);
+        _outlinePass_CopyColor = new OutlinePass_CopyColor(Settings);
+        _outlinePass_Render = new OutlinePass_Render(Settings, overrideMaterial);
+        _outlinePass_Final = new OutlinePass_Final(Settings, fullscreenMaterial);
     }
 
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-        renderer.EnqueuePass(outlinePass_CopyColor);
-        renderer.EnqueuePass(outlinePass_Render);
-        renderer.EnqueuePass(outlinePass_Final);
+        renderer.EnqueuePass(_outlinePass_CopyColor);
+        renderer.EnqueuePass(_outlinePass_Render);
+        renderer.EnqueuePass(_outlinePass_Final);
     }
 }

@@ -6,26 +6,31 @@ using UnityEngine.Rendering.Universal;
 
 public class BloomPass_Render : ScriptableRenderPass
 {
-    private readonly Material blurMaterial;
-    private readonly LayerMask layerMask;
-    private readonly uint renderLayerMask;
+    private readonly Material _blurMaterial;
+    private readonly LayerMask _layerMask;
+    private readonly uint _renderLayerMask;
+    private readonly int _pass;
+    private readonly float _blurIntensity;
 
-    private readonly List<ShaderTagId> shaderTagIds = new()
+    private readonly List<ShaderTagId> _shaderTagIds = new()
     {
         new("UniversalForwardOnly"),
         new("UniversalForward"),
         new("SRPDefaultUnlit"),
-        new("LightweightForward")
+        new("LightweightForward"),
+        new("GaussianBlur")
     };
 
-    public BloomPass_Render(FullscreenSettings settings, Material blurMaterial)
+    public BloomPass_Render(FullscreenSettings settings, Material blurMaterial, float blurIntensity, int pass)
     {
         renderPassEvent = settings.RenderPassEvent;
-        layerMask = settings.LayerMask;
+        _layerMask = settings.LayerMask;
 
-        renderLayerMask = (uint)1 << settings.RenderLayerMask;
+        _renderLayerMask = (uint)1 << settings.RenderLayerMask;
 
-        this.blurMaterial = blurMaterial;
+        _blurMaterial = blurMaterial;
+        _pass = pass;
+        _blurIntensity = blurIntensity;
     }
 
     private void InitRendererLists(ContextContainer frameData, ref PassData passData, RenderGraph renderGraph)
@@ -36,44 +41,51 @@ public class BloomPass_Render : ScriptableRenderPass
 
         var sortFlags = cameraData.defaultOpaqueSortFlags;
 
-        var filterSettings = new FilteringSettings(RenderQueueRange.opaque, layerMask, renderLayerMask);
+        var filterSettings = new FilteringSettings(RenderQueueRange.opaque, _layerMask, _renderLayerMask);
 
-        var drawSettings = RenderingUtils.CreateDrawingSettings(shaderTagIds, renderingData, cameraData, lightData, sortFlags);
-        drawSettings.overrideMaterial = blurMaterial;
+        var drawSettings = RenderingUtils.CreateDrawingSettings(_shaderTagIds, renderingData, cameraData, lightData, sortFlags);
+        drawSettings.overrideMaterial = _blurMaterial;
 
         var param = new RendererListParams(renderingData.cullResults, drawSettings, filterSettings);
 
-        passData.rendererListHandle = renderGraph.CreateRendererList(param);
+        passData.RendererListHandle = renderGraph.CreateRendererList(param);
     }
 
     static void ExecutePass(PassData data, RasterGraphContext context)
     {
-        data.blurMaterial.SetTexture("_MainTex", data.color);
+        data.BlurMaterial.SetTexture("_MainTex", data.Color);
+        data.BlurMaterial.SetFloat("_BlurSize", data.BlurIntensity);
         context.cmd.ClearRenderTarget(RTClearFlags.All, new Color(0, 0, 0, 1), 1, 0);
-        context.cmd.DrawRendererList(data.rendererListHandle);
+        context.cmd.DrawRendererList(data.RendererListHandle);
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
-        string passName = "BloomPass Render";
+        string passName = $"BloomPass Render {_pass}";
         var resourceData = frameData.Get<UniversalResourceData>();
         var fullscreenData = frameData.Get<BloomRenderData>();
         using var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData);
 
         var targetDesc = renderGraph.GetTextureDesc(resourceData.cameraColor);
-        targetDesc.name = "_BlurredColor";
+        targetDesc.name = $"_BlurredColor {_pass}";
         targetDesc.clearBuffer = false;
         targetDesc.depthBufferBits = DepthBits.None;
 
         TextureHandle destination = renderGraph.CreateTexture(targetDesc);
-        fullscreenData.BlurredTextureHandle = destination;
+        fullscreenData.BlurredTextureHandle[_pass] = destination;
 
-        passData.blurMaterial = blurMaterial;
-        passData.color = resourceData.cameraColor;
+        passData.BlurMaterial = _blurMaterial;
+        passData.Color = (_pass != 0 ? fullscreenData.BlurredTextureHandle[_pass - 1] : resourceData.cameraColor);
+        passData.BlurIntensity = _blurIntensity;
 
         InitRendererLists(frameData, ref passData, renderGraph);
 
-        builder.UseRendererList(passData.rendererListHandle);
+        builder.UseRendererList(passData.RendererListHandle);
+
+        if (_pass != 0)
+        {
+            builder.UseTexture(fullscreenData.BlurredTextureHandle[_pass - 1]);
+        }
 
         builder.SetRenderAttachment(destination, 0);
         builder.SetRenderFunc<PassData>(ExecutePass);
@@ -81,8 +93,9 @@ public class BloomPass_Render : ScriptableRenderPass
 
     internal class PassData
     {
-        internal RendererListHandle rendererListHandle;
-        internal Material blurMaterial;
-        internal TextureHandle color;
+        internal RendererListHandle RendererListHandle;
+        internal Material BlurMaterial;
+        internal TextureHandle Color;
+        internal float BlurIntensity;
     }
 }

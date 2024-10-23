@@ -6,11 +6,11 @@ using UnityEngine.Rendering.Universal;
 
 public class OutlinePass_Render : ScriptableRenderPass
 {
-    private readonly Material overrideMaterial;
-    private readonly LayerMask layerMask;
-    private readonly uint renderLayerMask;
+    private readonly Material _overrideMaterial;
+    private readonly LayerMask _layerMask;
+    private readonly uint _renderLayerMask;
 
-    private readonly List<ShaderTagId> shaderTagIds = new()
+    private readonly List<ShaderTagId> _shaderTagIds = new()
     {
         new("UniversalForwardOnly"),
         new("UniversalForward"),
@@ -21,11 +21,11 @@ public class OutlinePass_Render : ScriptableRenderPass
     public OutlinePass_Render(FullscreenSettings settings, Material overrideMaterial)
     {
         renderPassEvent = settings.RenderPassEvent;
-        layerMask = settings.LayerMask;
+        _layerMask = settings.LayerMask;
 
-        renderLayerMask = (uint)1 << settings.RenderLayerMask;
+        _renderLayerMask = (uint)1 << settings.RenderLayerMask;
 
-        this.overrideMaterial = overrideMaterial;
+        _overrideMaterial = overrideMaterial;
     }
 
     private void InitRendererLists(ContextContainer frameData, ref PassData passData, RenderGraph renderGraph)
@@ -36,25 +36,25 @@ public class OutlinePass_Render : ScriptableRenderPass
 
         var sortFlags = cameraData.defaultOpaqueSortFlags;
 
-        var filterSettings = new FilteringSettings(RenderQueueRange.opaque, layerMask, renderLayerMask);
+        var filterSettings = new FilteringSettings(RenderQueueRange.opaque, _layerMask, _renderLayerMask);
 
-        var drawSettings = RenderingUtils.CreateDrawingSettings(shaderTagIds, renderingData, cameraData, lightData, sortFlags);
-        drawSettings.overrideMaterial = overrideMaterial;
+        var drawSettings = RenderingUtils.CreateDrawingSettings(_shaderTagIds, renderingData, cameraData, lightData, sortFlags);
+        drawSettings.overrideMaterial = _overrideMaterial;
 
         var param = new RendererListParams(renderingData.cullResults, drawSettings, filterSettings);
 
-        passData.rendererListHandle = renderGraph.CreateRendererList(param);
+        passData.RendererListHandle = renderGraph.CreateRendererList(param);
     }
 
     static void ExecutePass(PassData data, RasterGraphContext context)
     {
         context.cmd.ClearRenderTarget(RTClearFlags.All, new Color(0, 0, 0, 1), 1, 0);
-        context.cmd.DrawRendererList(data.rendererListHandle);
+        context.cmd.DrawRendererList(data.RendererListHandle);
     }
 
     public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
     {
-        string passName = "FullscreenPass Render";
+        string passName = "OutlinePass Render";
         var resourceData = frameData.Get<UniversalResourceData>();
         var fullscreenData = frameData.Get<OutlineRenderData>();
         using var builder = renderGraph.AddRasterRenderPass<PassData>(passName, out var passData);
@@ -69,7 +69,7 @@ public class OutlinePass_Render : ScriptableRenderPass
 
         InitRendererLists(frameData, ref passData, renderGraph);
 
-        builder.UseRendererList(passData.rendererListHandle);
+        builder.UseRendererList(passData.RendererListHandle);
 
         builder.SetRenderAttachment(destination, 0);
         builder.SetRenderFunc<PassData>(ExecutePass);
@@ -77,6 +77,6 @@ public class OutlinePass_Render : ScriptableRenderPass
 
     internal class PassData
     {
-        internal RendererListHandle rendererListHandle;
+        internal RendererListHandle RendererListHandle;
     }
 }

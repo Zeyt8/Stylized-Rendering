@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Bloom
   m_EditorClassIdentifier: 
   m_Active: 1
-  blurMaterial: {fileID: 0}
-  fullscreenMaterial: {fileID: 2100000, guid: acbc7fe8db6fc8c43ac9513875fae054, type: 2}
+  _blurMaterial: {fileID: 0}
+  _fullscreenMaterial: {fileID: 0}
+  _blurIntensity: 0
   Settings:
     RenderPassEvent: 450
     LayerMask:
@@ -109,8 +110,9 @@ MonoBehaviour:
   m_Name: Bloom
   m_EditorClassIdentifier: 
   m_Active: 1
-  blurMaterial: {fileID: 2100000, guid: 3d71dbdeed5fed443bf1e80fabc21fa4, type: 2}
-  fullscreenMaterial: {fileID: 2100000, guid: acbc7fe8db6fc8c43ac9513875fae054, type: 2}
+  _blurMaterial: {fileID: 2100000, guid: 3d71dbdeed5fed443bf1e80fabc21fa4, type: 2}
+  _fullscreenMaterial: {fileID: 2100000, guid: acbc7fe8db6fc8c43ac9513875fae054, type: 2}
+  _blurIntensity: 10
   Settings:
     RenderPassEvent: 500
     LayerMask:
