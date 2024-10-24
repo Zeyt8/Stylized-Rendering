@@ -88,9 +88,11 @@ MonoBehaviour:
   m_Name: Bloom
   m_EditorClassIdentifier: 
   m_Active: 1
-  _blurMaterial: {fileID: 2100000, guid: 3d71dbdeed5fed443bf1e80fabc21fa4, type: 2}
+  _blurMaterials:
+  - {fileID: 2100000, guid: 3d71dbdeed5fed443bf1e80fabc21fa4, type: 2}
+  - {fileID: 2100000, guid: dc1727c316e2988409ee35c1efb50820, type: 2}
   _fullscreenMaterial: {fileID: 2100000, guid: acbc7fe8db6fc8c43ac9513875fae054, type: 2}
-  _blurIntensity: 8
+  _blurIntensity: 4
   Settings:
     RenderPassEvent: 500
     LayerMask:

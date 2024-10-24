@@ -6,7 +6,7 @@ using UnityEngine.Rendering.Universal;
 public class BloomRenderData : ContextItem
 {
     public TextureHandle ColorCopyTextureHandle;
-    public TextureHandle[] BlurredTextureHandle = new TextureHandle[2];
+    public TextureHandle[] BlurredTextureHandle = new TextureHandle[20];
 
     public override void Reset()
     {
@@ -20,14 +20,14 @@ public class BloomRenderData : ContextItem
 
 public class BloomRenderFeature : ScriptableRendererFeature
 {
-    [SerializeField] private Material _blurMaterial;
+    [SerializeField] private Material[] _blurMaterials = new Material[2];
     [SerializeField] private Material _fullscreenMaterial;
     [SerializeField] private float _blurIntensity;
 
     public FullscreenSettings Settings = new();
 
     private BloomPass_CopyColor _bloomPass_CopyColor;
-    private BloomPass_Render[] _bloomPass_Render = new BloomPass_Render[2];
+    private BloomPass_Render[] _bloomPass_Render = new BloomPass_Render[20];
     private BloomPass_Final _bloomPass_Final;
 
     public override void Create()
@@ -35,7 +35,7 @@ public class BloomRenderFeature : ScriptableRendererFeature
         _bloomPass_CopyColor = new BloomPass_CopyColor(Settings);
         for (int i = 0; i < _bloomPass_Render.Length; i++)
         {
-            _bloomPass_Render[i] = new BloomPass_Render(Settings, new Material(_blurMaterial), _blurIntensity, i);
+            _bloomPass_Render[i] = new BloomPass_Render(Settings, new Material(_blurMaterials[i % 2]), _blurIntensity, i);
         }
         _bloomPass_Final = new BloomPass_Final(Settings, _fullscreenMaterial);
     }

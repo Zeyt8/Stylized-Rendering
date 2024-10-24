@@ -1,4 +1,4 @@
-Shader "Custom/GaussianBlur"
+Shader "Custom/GaussianBlurVertical"
 {
     Properties
     {
@@ -9,7 +9,7 @@ Shader "Custom/GaussianBlur"
     {
         Pass
         {
-            Name "GaussianBlur"
+            Name "GaussianBlurVertical"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -42,30 +42,19 @@ Shader "Custom/GaussianBlur"
             {
                 float2 uv = i.screenPos.xy / i.screenPos.w;
                 fixed4 color = fixed4(0, 0, 0, 0);
-                float2 offset = float2(_BlurSize / _ScreenParams.x, _BlurSize / _ScreenParams.y);
+                float2 offset = float2(0, _BlurSize / _ScreenParams.y);
 
-                float kernel[7][7] = {
-                    { 1.0,  6.0,  15.0,  20.0,  15.0,  6.0,  1.0 },
-                    { 6.0, 36.0,  90.0, 120.0,  90.0, 36.0,  6.0 },
-                    { 15.0, 90.0, 225.0, 300.0, 225.0, 90.0, 15.0 },
-                    { 20.0,120.0, 300.0, 400.0, 300.0,120.0, 20.0 },
-                    { 15.0, 90.0, 225.0, 300.0, 225.0, 90.0, 15.0 },
-                    { 6.0, 36.0,  90.0, 120.0,  90.0, 36.0,  6.0 },
-                    { 1.0,  6.0,  15.0,  20.0,  15.0,  6.0,  1.0 }
+                float kernel[15] = {
+                    0.5, 2.4, 9.2, 27.8, 65.6, 121.0, 174.7, 197.4, 174.7, 121.0, 65.6, 27.8, 9.2, 2.4, 0.5
                 };
 
-                float kernelSum = 4096.0;
-
-                for (int x = -3; x <= 3; x++)
+                for (int y = -7; y <= 7; y++)
                 {
-                    for (int y = -3; y <= 3; y++)
-                    {
-                        float2 sampleOffset = float2(x * offset.x, y * offset.y);
-                        color += tex2D(_MainTex, uv + sampleOffset) * kernel[x + 3][y + 3];
-                    }
+                    float2 sampleOffset = float2(0, y * offset.y);
+                    color += tex2D(_MainTex, uv + sampleOffset) * kernel[y + 7];
                 }
 
-                color /= kernelSum;
+                color /= 1000;
 
                 return color;
             }
