@@ -1,5 +1,29 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-1167942524098697866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d67c0c75137ea844cbfbb8e5a8993d0b, type: 3}
+  m_Name: VolumetricLightRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  _intensity: 0.5
+  _blurWidth: 0.5
+  _occludersMaterial: {fileID: 2100000, guid: 6e3a23011ce8fc84297a02f575d3d0eb, type: 2}
+  _scatteringMaterial: {fileID: 2100000, guid: 91893203af021aa43b04994c75f9b8de, type: 2}
+  _combineMaterial: {fileID: -876546973899608171, guid: e9b3a020fb80b1c4a905e35c6af63e87, type: 3}
+  _settings:
+    RenderPassEvent: 400
+    LayerMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    RenderLayerMask: 0
 --- !u!114 &-1092471013433057066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49,7 +73,8 @@ MonoBehaviour:
   - {fileID: 7833122117494664109}
   - {fileID: -1092471013433057066}
   - {fileID: 6718397579125382941}
-  m_RendererFeatureMap: ad6b866f10d7b46cd660e9c466c3d6f01ddf9cab008b3c5d
+  - {fileID: -1167942524098697866}
+  m_RendererFeatureMap: ad6b866f10d7b46cd660e9c466c3d6f01ddf9cab008b3c5d7625065d76a2caef
   m_UseNativeRenderPass: 1
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
