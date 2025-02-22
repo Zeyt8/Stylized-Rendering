@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d67c0c75137ea844cbfbb8e5a8993d0b, type: 3}
   m_Name: VolumetricLightRendererFeature
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   _intensity: 0.5
   _blurWidth: 0.5
   _occludersMaterial: {fileID: 2100000, guid: 6e3a23011ce8fc84297a02f575d3d0eb, type: 2}
@@ -38,7 +38,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 1
   overrideMaterial: {fileID: -876546973899608171, guid: 98c6df679cb9ece48bc99dfc70764b96, type: 3}
-  fullscreenMaterial: {fileID: 2100000, guid: ee906af4032454c46b1bce08f9d01c90, type: 2}
+  fullscreenMaterial: {fileID: -876546973899608171, guid: 597209a11d10e72408f309feab8d4c45, type: 3}
+  _robertsCrossMultiplier: 6
+  _noiseStrength: 0.0005
+  _noiseScale: 50
+  _outlineColor: {r: 0, g: 0, b: 0, a: 1}
+  _depthOutlineScale: 2
+  _depthThreshold: 0.2
+  _steepAngleThreshold: 1.67
+  _steepAngleMultiplier: 25
+  _normalOutlineScale: 1
+  _normalThreshold: 0.5
+  _colorOutlineScale: 0.5
+  _colorThresholdMin: 0.2
+  _colorThresholdMax: 0.5
+  _dotsDensity: 100
+  _dotsSize: 0.45
   Settings:
     RenderPassEvent: 350
     LayerMask:
@@ -113,11 +128,16 @@ MonoBehaviour:
   m_Name: Bloom
   m_EditorClassIdentifier: 
   m_Active: 1
-  _blurMaterials:
-  - {fileID: 2100000, guid: 3d71dbdeed5fed443bf1e80fabc21fa4, type: 2}
-  - {fileID: 2100000, guid: dc1727c316e2988409ee35c1efb50820, type: 2}
-  _fullscreenMaterial: {fileID: 2100000, guid: acbc7fe8db6fc8c43ac9513875fae054, type: 2}
-  _blurIntensity: 4
+  _blurShader: {fileID: 4800000, guid: b3b18588157374f4b966ea5e88a82a76, type: 3}
+  _fullscreenMaterial: {fileID: -876546973899608171, guid: fd94ece1ab9825843aa9f08f0c4d5920, type: 3}
+  _threshold: 0.9
+  _intensity: 1.1
+  _crosshatchThickness: 0.09
+  _crosshatchSpacing: 0.005
+  _crosshatchFade: 0.1
+  _rotationSpeed: 0.01
+  _blurSize: 30
+  _blurSmoothness: 1
   Settings:
     RenderPassEvent: 500
     LayerMask:
